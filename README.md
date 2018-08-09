@@ -12,35 +12,31 @@ Acknowledgements: We graciously thank the authors of the previous code releases 
 
 ## Using the detection code
 
-1. Move to the code_basic directory
-2. Start matlab
-3. Run the 'compile' script to compile the helper functions.
-   (you may need to edit compile.m to use a different convolution 
-    routine depending on your system)
-4. Run 'demo' to see an example of the code run on sample images.
-5. By default, the code is set to output the highest-scoring detection
-   in an image. Uncomment line 27 if you would like to see all detections.
+1. Move to the `code_basic` directory
+2. Start Matlab
+3. Run `compile.m` to compile the helper functions. (You may also edit `compile.m` to use a different convolution routine depending on your system.)
+4. Run `demo.m` to see the detection code run on sample images.
+5. By default, the code is set to output the highest-scoring detection in an image.
 
 ## Using the learning code
 
-1. Move to the code_full directory
-2. Start matlab
-3. Run the 'compile' script to compile the helper functions.
-   (you may need to edit compile.m to use a different convolution 
-    routine depending on your system)
-4. Run 'PARSE_demo' or 'BUFFY_demo' to see an example of the complete system, including training and benchmark evaluation.
+1. Move to the `code_full` directory
+2. Download the PARSE dataset (MB), BUFFY dataset (MB) and INRIA Person Background dataset (59MB), put them into `code_full/data/PARSE`, `code_full/data/BUFFY` and `code_full/data/INRIA` respectively. Or you can simply call `bash download_data.sh` in Linux system. 
+3. Start Matlab
+4. Run `compile.m` to compile the helper functions. (You may also edit `compile.m` to use a different convolution routine depending on your system.)
+5. Run `PARSE_demo.m` or `BUFFY_demo.m` to see the complete system including training and benchmark evaluation.
 
 ## References
 
-[1] Y. Yang, D. Ramanan. Articulated Pose Estimation using Flexible Mixtures of Parts. CVPR 2011.
+[1] Y. Yang, D. Ramanan. [Articulated Pose Estimation using Flexible Mixtures of Parts](https://yangyi02.github.io/research/pose/pose_cvpr2011.pdf). CVPR 2011.
 
-[2] P. Felzenszwalb, R. Girshick, D. McAllester. Discriminatively Trained Deformable Part Models. http://people.cs.uchicago.edu/~pff/latent.
+[2] P. Felzenszwalb, R. Girshick, D. McAllester. [Discriminatively Trained Deformable Part Models](http://www.rossgirshick.info/latent/). PAMI 2010.
 
-[3] D. Ramanan. Dual Coordinate Descent Solvers for Large Structured Prediction Problems. UCI Technical Report, to appear.
+[3] D. Ramanan. [Dual Coordinate Descent Solvers for Large Structured Prediction Problems](https://arxiv.org/pdf/1312.1743.pdf). UCI Technical Report 2014.
 
 [4] D. Ramanan. Learning to Parse Images of Articulated Bodies. NIPS 2006.
 
-[5] V. Ferrari, Marcin Eichner, M. J. Marin-Jimenez, A. Zisserman. Buffy Stickmen V2.1: Annotated data and evaluation routines for 2D human pose estimation. http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html
+[5] V. Ferrari, Marcin Eichner, M. J. Marin-Jimenez, A. Zisserman. [Buffy Stickmen V2.1: Annotated data and evaluation routines for 2D human pose estimation](http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html). IJCV 2012. 
 
 [6] N. Dalal, B. Triggs. Histograms of Oriented Gradients for Human Detection. CVPR 2005.
 
