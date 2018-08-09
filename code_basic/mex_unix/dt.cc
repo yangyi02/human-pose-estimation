@@ -61,7 +61,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
   // Read in deformation coefficients, negating to define a cost
   // Read in offsets for output grid, fixing MATLAB 0-1 indexing
-  const int *dims = mxGetDimensions(prhs[0]);
+  const long unsigned int *dims = mxGetDimensions(prhs[0]);
   double *vals = (double *)mxGetPr(prhs[0]);
   double ax = -mxGetScalar(prhs[1]);
   double bx = -mxGetScalar(prhs[2]);

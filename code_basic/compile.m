@@ -3,11 +3,11 @@ if isunix()
   % use one of the following depending on your setup
   % 1 is fastest, 3 is slowest 
   % 1) multithreaded convolution using blas
-  mex -O fconvblas.cc -lmwblas -o fconv
+  mex -O fconvblas.cc -lmwblas -output fconv
   % 2) mulththreaded convolution without blas
-  % mex -O fconvMT.cc -o fconv 
+  % mex -O fconvMT.cc -output fconv 
   % 3) basic convolution, very compatible
-  % mex -O fconv.cc -o fconv
+  % mex -O fconv.cc -output fconv
 elseif ispc()
   cd mex_pc;
   mex -O fconv.cc
