@@ -16,7 +16,7 @@ sbin = 8;
 % --------------------
 % Prepare training and testing images and part bounding boxes
 % You will need to write custom *_data() functions for your own dataset
-[pos neg test] = BUFFY_data(name);
+[pos, neg, test] = BUFFY_data(name);
 pos = point2box(pos,pa);
 % --------------------
 % training

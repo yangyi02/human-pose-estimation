@@ -1,4 +1,4 @@
-function [apk prec rec] = eval_apk(det, gt, thresh)
+function [apk, prec, rec] = eval_apk(det, gt, thresh)
 % Evaluate the average precision of keypoints.
 % Input:
 %   det: 
@@ -80,7 +80,7 @@ for p = 1:numparts
     dist = sqrt(sum((point - squeeze(gt(i).point(p,:,:))).^2, 2));
     dist = dist ./ gt(i).scale;
 
-    [distmin jmin] = min(dist);
+    [distmin, jmin] = min(dist);
     if gt(i).isdet(jmin)
       % If this ground truth is already claimed by a higher score detection
       fp(n) = 1;

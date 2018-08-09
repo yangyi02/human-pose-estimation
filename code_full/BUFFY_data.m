@@ -1,4 +1,4 @@
-function [pos neg test] = BUFFY_data(name)
+function [pos, neg, test] = BUFFY_data(name)
 % this function is very dataset specific, you need to modify the code if
 % you want to apply the pose algorithm on some other dataset
 
@@ -20,9 +20,9 @@ cls = [name '_data'];
 try
 	load([cachedir cls]);
 catch
-	posanno   = 'BUFFY/data/buffy_s5e%d_sticks.txt';
-	posims    = 'BUFFY/images/buffy_s5e%d_original/%.6d.jpg';
-	labelfile = 'BUFFY/labels/buffy_s5e%d_labels.mat';
+	posanno   = 'data/BUFFY/data/buffy_s5e%d_sticks.txt';
+	posims    = 'data/BUFFY/images/buffy_s5e%d_original/%.6d.jpg';
+	labelfile = 'data/BUFFY/labels/buffy_s5e%d_labels.mat';
   
   trainepi = [3 4];   % training episodes
   testepi  = [2 5 6]; % testing  episodes
@@ -85,7 +85,7 @@ catch
 
 	% -------------------
 	% grab neagtive image information
-	negims = 'INRIA/%.5d.jpg';
+	negims = 'data/INRIA/%.5d.jpg';
 	neg = [];
 	numneg = 0;
 	for fr = trainfrs_neg

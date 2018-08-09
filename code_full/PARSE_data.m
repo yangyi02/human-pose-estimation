@@ -1,4 +1,4 @@
-function [pos neg test] = PARSE_data(name)
+function [pos, neg, test] = PARSE_data(name)
 % this function is very dataset specific, you need to modify the code if
 % you want to apply the pose algorithm on some other dataset
 
@@ -26,8 +26,8 @@ catch
 
   % -------------------
   % grab positive annotation and image information
-  load PARSE/labels.mat;
-  posims = 'PARSE/im%.4d.jpg';
+  load data/PARSE/labels.mat;
+  posims = 'data/PARSE/im%.4d.jpg';
   pos = [];
   numpos = 0;
   for fr = trainfrs_pos
@@ -95,7 +95,7 @@ catch
 
   % -------------------
   % grab neagtive image information
-  negims = 'INRIA/%.5d.jpg';
+  negims = 'data/INRIA/%.5d.jpg';
   neg = [];
   numneg = 0;
   for fr = trainfrs_neg
@@ -105,7 +105,7 @@ catch
 
   % -------------------
   % grab testing image information 
-  testims = 'PARSE/im%.4d.jpg';
+  testims = 'data/PARSE/im%.4d.jpg';
   test = [];
   numtest = 0;
   for fr = testfrs_pos
