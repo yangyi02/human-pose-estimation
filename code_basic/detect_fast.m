@@ -19,16 +19,16 @@ boxes = zeros(10000,length(components{1})*4+2);
 cnt   = 0;
 
 % Iterate over scales and components,
-for rlevel = levels,
-  for c  = 1:length(model.components),
+for rlevel = levels
+  for c  = 1:length(model.components)
     parts    = components{c};
     numparts = length(parts);
 
     % Local scores
-    for k = 1:numparts,
+    for k = 1:numparts
       f     = parts(k).filterid;
       level = rlevel-parts(k).scale*interval;
-      if isempty(resp{level}),
+      if isempty(resp{level})
         resp{level} = fconv(pyra.feat{level},filters,1,length(filters));
       end
       for fi = 1:length(f)
@@ -38,7 +38,7 @@ for rlevel = levels,
     end
     
     % Walk from leaves to root of tree, passing message to parent
-    for k = numparts:-1:2,
+    for k = numparts:-1:2
       par = parts(k).parent;
       [msg,parts(k).Ix,parts(k).Iy,parts(k).Ik] = passmsg(parts(k),parts(par));
       parts(par).score = parts(par).score + msg;
@@ -46,11 +46,11 @@ for rlevel = levels,
 
     % Add bias to root score
     parts(1).score = parts(1).score + parts(1).b;
-    [rscore Ik]    = max(parts(1).score,[],3);
+    [rscore, Ik]    = max(parts(1).score,[],3);
 
     % Walk back down tree following pointers
     [Y,X] = find(rscore >= thresh);
-    if length(X) > 1,
+    if length(X) > 1
       I   = (X-1)*size(rscore,1) + Y;
       box = backtrack(X,Y,Ik(I),parts,pyra);
       i   = cnt+1:cnt+length(I);
@@ -65,8 +65,8 @@ boxes = boxes(1:cnt,:);
 % Cache various statistics from the model data structure for later use  
 function [components,filters,resp] = modelcomponents(model,pyra)
   components = cell(length(model.components),1);
-  for c = 1:length(model.components),
-    for k = 1:length(model.components{c}),
+  for c = 1:length(model.components)
+    for k = 1:length(model.components{c})
       p = model.components{c}(k);
       [p.w,p.defI,p.starty,p.startx,p.step,p.level,p.Ix,p.Iy] = deal([]);
       [p.scale,p.level,p.Ix,p.Iy] = deal(0);
@@ -83,7 +83,7 @@ function [components,filters,resp] = modelcomponents(model,pyra)
       
       for f = 1:length(p.filterid)
         x = model.filters(p.filterid(f));
-        [p.sizy(f) p.sizx(f) foo] = size(x.w);
+        [p.sizy(f), p.sizx(f), foo] = size(x.w);
 %         p.filterI(f) = x.i;
       end
       for f = 1:length(p.defid)	  
@@ -109,7 +109,7 @@ function [components,filters,resp] = modelcomponents(model,pyra)
   
   resp    = cell(length(pyra.feat),1);
   filters = cell(length(model.filters),1);
-  for i = 1:length(filters),
+  for i = 1:length(filters)
     filters{i} = model.filters(i).w;
   end
 
@@ -152,9 +152,9 @@ function box = backtrack(x,y,mix,parts,pyra)
   mptr = zeros(numx,numparts);
   box  = zeros(numx,4,numparts);
 
-  for k = 1:numparts,
+  for k = 1:numparts
     p   = parts(k);
-    if k == 1,
+    if k == 1
       xptr(:,k) = x;
       yptr(:,k) = y;
       mptr(:,k) = mix;
