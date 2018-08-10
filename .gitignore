@@ -2,4 +2,4 @@
 *.mexw64
 *.m~
 code_full/cache
-code_full/data
+code_full/data_tmp

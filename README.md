@@ -21,7 +21,7 @@ Acknowledgements: We graciously thank the authors of the previous code releases 
 ## Using the learning code
 
 1. Move to the `code_full` directory
-2. Download the PARSE dataset (MB), BUFFY dataset (MB) and INRIA Person Background dataset (59MB), put them into `code_full/data/PARSE`, `code_full/data/BUFFY` and `code_full/data/INRIA` respectively. Or you can simply call `bash download_data.sh` in Linux system. 
+2. Download the PARSE dataset (MB), BUFFY dataset (MB) and INRIA Person Background dataset (59MB), put them into `data/PARSE`, `data/BUFFY` and `data/INRIA` respectively. Or you can simply call `bash download_data.sh` in Linux system. 
 3. Start Matlab (version > 2013a).
 4. Run `compile.m` to compile the helper functions. (You may also edit `compile.m` to use a different convolution routine depending on your system.)
 5. Run `PARSE_demo.m` or `BUFFY_demo.m` to see the complete system including training and benchmark evaluation.
