@@ -36,7 +36,7 @@ Acknowledgements: We graciously thank the authors of the previous code releases 
 
 [4] D. Ramanan. Learning to Parse Images of Articulated Bodies. NIPS 2006.
 
-[5] V. Ferrari, Marcin Eichner, M. J. Marin-Jimenez, A. Zisserman. [Buffy Stickmen V2.1: Annotated data and evaluation routines for 2D human pose estimation](http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html). IJCV 2012. 
+[5] V. Ferrari, Marcin Eichner, M. J. Marin-Jimenez, A. Zisserman. [Buffy Stickmen V3.01: Annotated data and evaluation routines for 2D human pose estimation](http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html). IJCV 2012. 
 
 [6] N. Dalal, B. Triggs. Histograms of Oriented Gradients for Human Detection. CVPR 2005.
 
