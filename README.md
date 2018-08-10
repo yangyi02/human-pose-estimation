@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This is a Matlab implementation of the human pose estimation algorithm described in [1]. It includes pre-trained full-body and upper-body models. Much of the detection code is built on top of part-based model implementation of [2]. The training code implements a quadratic program (QP) solver described in [3].
+This is a Matlab implementation of the human pose estimation algorithm described in [1, 2]. It includes pre-trained full-body and upper-body models. Much of the detection code is built on top of part-based model implementation of [3]. The training code implements a quadratic program (QP) solver described in [4].
 
-To illustrate the use of the training code, this package also uses positive images from the PARSE dataset [4], the BUFFY dataset [5], and negative images from the INRIA Person Background dataset [6]. We also include the PCP evaluation code from [5] for benchmark evaluation on both datasets. The original evaluation code assumes a rigid-template detector, and we make modifications for our deformable skeleton detector.
+The algorithm is trained and tested using positive images from the PARSE dataset [5], the BUFFY dataset [6], and negative images from the INRIA Person Background dataset [7].
 
 Compatibility issues: The training code requires 7.5GB of memory. Modify line 32/33 in `code_full/learning/train.m` to use less memory at the cost of longer training times.
 
@@ -28,17 +28,19 @@ Acknowledgements: We graciously thank the authors of the previous code releases 
 
 ## References
 
-[1] Y. Yang, D. Ramanan. [Articulated Pose Estimation using Flexible Mixtures of Parts](https://yangyi02.github.io/research/pose/pose_cvpr2011.pdf). CVPR 2011.
+[1] Y. Yang, D. Ramanan. [Articulated Pose Estimation using Flexible Mixtures of Parts](https://yangyi02.github.io/research/pose/index.html). CVPR 2011.
 
-[2] P. Felzenszwalb, R. Girshick, D. McAllester. [Discriminatively Trained Deformable Part Models](http://www.rossgirshick.info/latent/). PAMI 2010.
+[2] Y. Yang, D. Ramanan. [Articulated Human Detection with Flexible Mixtures of Parts](https://yangyi02.github.io/research/pose/index.html). PAMI 2013.
 
-[3] D. Ramanan. [Dual Coordinate Descent Solvers for Large Structured Prediction Problems](https://arxiv.org/pdf/1312.1743.pdf). UCI Technical Report 2014.
+[3] P. Felzenszwalb, R. Girshick, D. McAllester, D. Ramanan. [Discriminatively Trained Deformable Part Models](http://www.rossgirshick.info/latent/). PAMI 2010.
 
-[4] D. Ramanan. Learning to Parse Images of Articulated Bodies. NIPS 2006.
+[4] D. Ramanan. [Dual Coordinate Descent Solvers for Large Structured Prediction Problems](https://arxiv.org/pdf/1312.1743.pdf). UCI Technical Report 2014.
 
-[5] V. Ferrari, Marcin Eichner, M. J. Marin-Jimenez, A. Zisserman. [Buffy Stickmen V3.01: Annotated data and evaluation routines for 2D human pose estimation](http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html). IJCV 2012. 
+[5] D. Ramanan. [Learning to Parse Images of Articulated Bodies](https://www.cs.cmu.edu/~deva/papers/parse/index.html). NIPS 2006.
 
-[6] N. Dalal, B. Triggs. Histograms of Oriented Gradients for Human Detection. CVPR 2005.
+[6] V. Ferrari, M. Eichner, M. Marin-Jimenez, A. Zisserman. [Buffy Stickmen V3.01: Annotated data and evaluation routines for 2D human pose estimation](http://www.robots.ox.ac.uk/~vgg/data/stickmen/index.html). IJCV 2012. 
+
+[7] N. Dalal, B. Triggs. [Histograms of Oriented Gradients for Human Detection](http://pascal.inrialpes.fr/data/human/). CVPR 2005.
 
 ## Version Update
 
