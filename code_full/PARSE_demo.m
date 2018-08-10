@@ -5,7 +5,7 @@ name = 'PARSE';
 % specify model parameters
 % number of mixtures for 26 parts
 K = [6 6 6 6 6 6 6 6 6 6 6 6 6 6 ...
-     6 6 6 6 6 6 6 6 6 6 6 6]; 
+     6 6 6 6 6 6 6 6 6 6 6 6];
 % Tree structure for 26 parts: pa(i) is the parent of part i
 % This structure is implicity assumed during data preparation
 % (PARSE_data.m) and evaluation (PARSE_eval_pcp)

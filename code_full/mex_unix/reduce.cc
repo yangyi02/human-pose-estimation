@@ -49,12 +49,12 @@ void reduce1dtran(double *src, int sheight, double *dst, int dheight,
 // returns resized image
 mxArray *reduce(const mxArray *mxsrc) {
   double *src = (double *)mxGetPr(mxsrc);
-  const int *sdims = mxGetDimensions(mxsrc);
+  const long unsigned int *sdims = mxGetDimensions(mxsrc);
   if (mxGetNumberOfDimensions(mxsrc) != 3 || 
       mxGetClassID(mxsrc) != mxDOUBLE_CLASS)
     mexErrMsgTxt("Invalid input");  
 
-  int ddims[3];
+  long unsigned int ddims[3];
   ddims[0] = (int)round(sdims[0]*.5);
   ddims[1] = (int)round(sdims[1]*.5);
   ddims[2] = sdims[2];
