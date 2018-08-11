@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This is a Matlab implementation of the human pose estimation algorithm described in [1, 2]. It includes pre-trained full-body and upper-body models. Much of the detection code is built on top of part-based model implementation of [3]. The training code implements a quadratic program (QP) solver described in [4].
+This is a Matlab implementation of the human pose estimation algorithm described in [1, 2]. It includes pre-trained full-body and upper-body models. Much of the detection code is built on top of deformable part-based model implementation [3]. The training code implements a quadratic program (QP) solver described in [4].
 
-The algorithm is trained and tested using positive images from the PARSE dataset [5], the BUFFY dataset [6], and negative images from the INRIA Person Background dataset [7].
+The code is trained and tested using positive images from the PARSE dataset [5], the BUFFY dataset [6], and negative images from the INRIA Person Background dataset [7].
 
 Compatibility issues: The training code requires 7.5GB of memory. Modify line 32/33 in `code_full/learning/train.m` to use less memory at the cost of longer training times.
 
@@ -21,7 +21,7 @@ Acknowledgements: We graciously thank the authors of the previous code releases 
 ## Using the learning code
 
 1. Move to the `code_full` directory
-2. Download the PARSE dataset (MB), BUFFY dataset (MB) and INRIA Person Background dataset (59MB), put them into `data/PARSE`, `data/BUFFY` and `data/INRIA` respectively. Or you can simply call `bash download_data.sh` in Linux system. 
+2. Download the PARSE dataset (2.5MB), BUFFY dataset (21MB) and INRIA Person Background dataset (59MB), put them into `data/PARSE`, `data/BUFFY` and `data/INRIA` respectively. Or you can simply call `bash download_data.sh` in Linux system. 
 3. Start Matlab (version > 2013a).
 4. Run `compile.m` to compile the helper functions. (You may also edit `compile.m` to use a different convolution routine depending on your system.)
 5. Run `PARSE_demo.m` or `BUFFY_demo.m` to see the complete system including training and benchmark evaluation.
