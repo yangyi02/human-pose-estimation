@@ -1,4 +1,4 @@
-function [apk, prec, rec] = eval_apk(det, gt, thresh)
+function [apk prec rec] = eval_apk(det, gt, thresh)
 % Evaluate the average precision of keypoints.
 % Input:
 %   det: 
@@ -21,35 +21,39 @@ assert(numel(det) == numel(gt));
 
 % Compute the scale of the ground truths
 for n = 1:numel(gt)
-  gt(n).scale = max(max(gt(n).point, [], 1) - min(gt(n).point, [], 1) + 1, [], 2);
-  gt(n).scale = squeeze(gt(n).scale);
-end
-
-% Count the total number of detections
-numdet = 0;
-for n = 1:numel(det)
-  numdet = numdet + size(det(n).point, 3);
+  for i = 1:numel(gt(n).obj)
+    box = [min(gt(n).obj(i).point, [], 1) max(gt(n).obj(i).point, [], 1)];
+    gt(n).obj(i).scale = max(box(3) - box(1) + 1, box(4) - box(2) + 1);
+  end
 end
 
 % Count the total number of ground truths 
 numgt = 0;
 for n = 1:numel(gt)
-	numgt = numgt + size(gt(n).point, 3);
+	numgt = numgt + numel(gt(n).obj);
 end
 
 % Count the number of parts
-numparts = size(gt(1).point, 1);
+numpart = size(gt(1).obj(1).point, 1);
+
+% Count the total number of detections
+numdet = 0;
+for n = 1:numel(det)
+  numdet = numdet + numel(det(n).obj);
+end
 
 % Organize all the detections
-ca = struct('point', cell(1,numdet), 'fr', cell(1,numdet), 'score', cell(1,numdet));
-cnt = 0;
 for n = 1:numel(det)
-	for i = 1:size(det(n).point, 3)
-		cnt = cnt + 1;
-		ca(cnt).point = det(n).point(:,:,i);
-		ca(cnt).fr = n;
-		ca(cnt).score = det(n).score(i);
+	for i = 1:numel(det(n).obj)
+    det(n).obj(i).fr = n;
 	end
+end
+
+ca = [];
+for n = 1:numel(det)
+  if isempty(det(n).obj), continue, end;
+  ca = cat(2, ca, det(n).obj);
+%   det = cat(2, det.obj);
 end
 
 % Sort detection from high score to low score
@@ -57,36 +61,40 @@ end
 ca = ca(I);
 
 % Compute precision recall and average precision
-apk = zeros(1, numparts);
-prec = cell(1, numparts);
-rec = cell(1, numparts);
-for p = 1:numparts
+apk = zeros(1, numpart);
+prec = cell(1, numpart);
+rec = cell(1, numpart);
+for p = 1:numpart
   % Store detection flag for computing true / false positives
-  for i = 1:numel(gt)
-    gt(i).isdet = zeros(1, size(gt(i).point, 3));
+  for n = 1:numel(gt)
+    for i = 1:numel(gt(n).obj)
+      gt(n).obj(i).isdet = 0;
+    end
   end
   
   tp = zeros(numdet,1);
   fp = zeros(numdet,1);
   for n = 1:numdet
-    i = ca(n).fr; % Get the image number for n-th detection
-    if isempty(gt(i).point)  % If no positive instance in the image.
+    fr = ca(n).fr; % Get the image number for n-th detection
+    if isempty(gt(fr).obj)  % If no positive instance in the image.
       fp(n) = 1; % This detection is a false positive.
       continue;
     end
-
+    
     % Compute distance between detected keypoint and ground truth keypoints.
-    point = repmat(ca(n).point(p,:), [1 size(gt(i).point, 3)]);
-    dist = sqrt(sum((point - squeeze(gt(i).point(p,:,:))).^2, 2));
-    dist = dist ./ gt(i).scale;
-
-    [distmin, jmin] = min(dist);
-    if gt(i).isdet(jmin)
+    dist = zeros(1, numel(gt(fr).obj));
+    for i = 1:numel(gt(fr).obj)
+      dist(i) = sqrt(sum((ca(n).point(p,:) - gt(fr).obj(i).point(p,:)).^2));
+      dist(i) = dist(i) ./ gt(fr).obj(i).scale;
+    end
+    
+    [distmin imin] = min(dist);
+    if gt(fr).obj(imin).isdet
       % If this ground truth is already claimed by a higher score detection
       fp(n) = 1;
     elseif distmin <= thresh
       tp(n) = 1;
-      gt(i).isdet(jmin) = 1;
+      gt(fr).obj(imin).isdet = 1;
     else
       fp(n) = 1;
     end

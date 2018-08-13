@@ -1,21 +1,27 @@
-function box = bestoverlap(boxes,gtbox,overlap)
+function box = bestoverlap(boxes, gtobj, overlap)
 
 box = [];
-if isempty(boxes) || isempty(gtbox)
+if isempty(boxes) || isempty(gtobj)
   return;
 end
 
-x1 = gtbox(1); y1 = gtbox(2); x2 = gtbox(3); y2 = gtbox(4);
+if nargin < 3
+  overlap = 0.3;
+end
+
+x1 = min(gtobj.point(:,1));
+y1 = min(gtobj.point(:,2));
+x2 = max(gtobj.point(:,1));
+y2 = max(gtobj.point(:,2));
 area = (x2-x1+1).*(y2-y1+1);
 
-b = boxes(:,1:floor(size(boxes, 2)/4)*4);
-b = reshape(b,size(b,1),4,size(b,2)/4);
-bx = .5*b(:,1,:) + .5*b(:,3,:);
-by = .5*b(:,2,:) + .5*b(:,4,:);
-bx1 = min(bx,[],3);
-bx2 = max(bx,[],3);
-by1 = min(by,[],3);
-by2 = max(by,[],3);
+numpart = floor(size(boxes,2)/5);
+idx = 5*((1:numpart) - 1);
+bx1 = min(boxes(:,idx+1), [], 2);
+by1 = min(boxes(:,idx+2), [], 2);
+bx2 = max(boxes(:,idx+3), [], 2);
+by2 = max(boxes(:,idx+4), [], 2);
+barea = (bx2 - bx1 + 1) .* (by2 - by1 + 1);
 
 xx1 = max(x1,bx1);
 yy1 = max(y1,by1);
@@ -25,10 +31,10 @@ yy2 = min(y2,by2);
 w = xx2-xx1+1; w(w<0) = 0;
 h = yy2-yy1+1; h(h<0) = 0;
 inter = w.*h;
-o = inter / area;
-I = find(o > overlap);
+o = inter ./ (barea + area - inter);
 
+I = find(o > overlap);
 if ~isempty(I)
-  [val ind] = max(boxes(I,end));
-  box  = boxes(I(ind),:);
+  [~, ind] = max(boxes(I,end));
+  box = boxes(I(ind),:);
 end

@@ -1,27 +1,33 @@
-function idx = clusterparts(deffeat,K,pa)
+function idx = clusterparts(location, PARA)
+% This function implements the simple K-means clustering method based on 
+% the 2D relative geometric features for every part.
 
-R = 100;
+% As K-means may fall into a local optimal solution, we try multiple times 
+% to get (hopefully) the global optimal.
+R = 100;  % Number of replications of K-means.
 
-idx = cell(1,length(deffeat));
-for p = 1:length(deffeat)
-	% create clustering feature
-  if pa(p) == 0
-    i = 1;
-    while pa(i) ~= p
-      i = i+1;
-    end
-    X = deffeat{i} - deffeat{p};
-  else
-    X = deffeat{p} - deffeat{pa(p)}; 
+tree = parent2tree(PARA.parent);
+
+numdata = size(location, 1);  % Number of data
+numparts = size(location, 3);  % Number of parts
+
+idx = zeros(numdata, numparts); % Clustering labels for all parts.
+for p = 1:numparts
+  fprintf('Clustering part %d.\n', p);
+  % Create clustering features
+  X = [];
+  for q = 1:numparts
+    if tree(p,q) == 0, continue, end;
+    X = [X location(:,:,q) - location(:,:,p)];
   end
-  % try multiple times kmeans
-  gInd = cell(1,R);
-  cen  = cell(1,R);
-  sumdist = zeros(1,R);
+  
+  % Try multiple times K-means
+  curdist = inf;
   for trial = 1:R
-    [gInd{trial} cen{trial} sumdist(trial)] = k_means(X,K(p));
+    [gInd, ~, sumdist] = k_means(X, PARA.K);
+		if sumdist < curdist
+			curdist = sumdist;
+			idx(:,p) = gInd;
+		end
   end
-  % take the smallest distance one
-  [dummy ind] = min(sumdist);
-  idx{p} = gInd{ind(1)};
 end

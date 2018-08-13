@@ -1,4 +1,4 @@
-function det = PARSE_transback(boxes)
+function det = PARSE_transback(det)
 
 % -------------------
 % Generate candidate keypoint locations
@@ -9,17 +9,9 @@ J = [14 12 10 22 24 26 7  5  3  15 17 19 2  1];
 A = [1  1  1  1  1  1  1  1  1  1  1  1  1  1];
 Transback = full(sparse(I,J,A,14,26));
 
-det = struct('point', cell(1, numel(boxes)), 'score', cell(1, numel(boxes)));
-for n = 1:length(boxes)
-  if isempty(boxes{n}), continue, end;
-  box = boxes{n};
-  b = box(:, 1:floor(size(box, 2)/4)*4);
-  b = reshape(b, size(b,1), 4, size(b,2)/4);
-  b = permute(b,[1 3 2]);
-  bx = .5*b(:,:,1) + .5*b(:,:,3);
-  by = .5*b(:,:,2) + .5*b(:,:,4);
-  for i = 1:size(b,1)
-    det(n).point(:,:,i) = Transback * [bx(i,:)' by(i,:)'];
-    det(n).score(i) = box(i, end);
-  end
+for n = 1:numel(det)
+	for i = 1:numel(det(n).obj)
+		if isempty(det(n).obj(i).point), continue, end
+		det(n).obj(i).point = Transback * det(n).obj(i).point;
+	end
 end

@@ -7,6 +7,7 @@ wreg  = ones(model.len,1);
 noneg = uint32([]);
 
 for x = model.bias
+  if x.i == 0, continue, end;
   j = x.i:x.i+numel(x.w)-1;
   w(j) = x.w;
 end

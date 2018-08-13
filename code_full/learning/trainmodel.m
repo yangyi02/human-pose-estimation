@@ -1,65 +1,79 @@
-function model = trainmodel(name,pos,neg,K,pa,sbin)
+function [model traintime] = trainmodel(name, pos, location, idx, neg, PARA)
+% This function trains a articulated pose model given positive training
+% data with negative images. 
+% It takes 3 paramters:
+%   K: number of mixtures for each part
+%   pa: tree structure for the model
+%   sbin: HOG cell size w.r.t. image pixels.
 
 globals;
 
-file = [cachedir name '.log'];
-delete(file);
-diary(file);
+% Log file for storing training information
+% filename = [cachedir name '.log'];
+% if exist(filename,'file')
+%   delete(filename);
+% end
+% diary(filename);
 
-cls = [name '_cluster_' num2str(K')'];
-try
-  load([cachedir cls]);
-catch
-  model = initmodel(pos,sbin);
-  def = data_def(pos,model);
-  idx = clusterparts(def,K,pa);
-  save([cachedir cls],'def','idx');
-end
-
-for p = 1:length(pa)
-  cls = [name '_part_' num2str(p) '_mix_' num2str(K(p))];
+% Train part HOG template individually for every cluster / type.
+traintime = 0;
+for p = 1:size(idx,2)
+  filename = [name '_part' num2str(p)];
   try
-    load([cachedir cls]);
+    load([cachedir filename]);
   catch
-    sneg = neg(1:min(length(neg),100));
-    model = initmodel(pos,sbin);
-    models = cell(1,K(p));
-    for k = 1:K(p)
-      spos = pos(idx{p} == k);
+    tic;
+    model0 = initmodel(pos, PARA.sbin);
+    sneg = neg(1:min(length(neg), 100)); % Subset of negatives for faster training.
+    models = cell(1, max(idx(:,p)));
+    for k = 1:max(idx(:,p))
+      spos = pos(idx(:,p) == k); % Subset of positives that contains this type data.
       for n = 1:length(spos)
         spos(n).x1 = spos(n).x1(p);
         spos(n).y1 = spos(n).y1(p);
         spos(n).x2 = spos(n).x2(p);
         spos(n).y2 = spos(n).y2(p);
       end
-      models{k} = train(cls,model,spos,sneg,1,1);
+      models{k} = train(filename, model0, spos, sneg, 1, 1);
     end
     model = mergemodels(models);
-    save([cachedir cls],'model');
+    traintime = traintime + toc/60;
+    save([cachedir filename], 'model', 'traintime');
   end
 end
 
-cls = [name '_final1_' num2str(K')'];
+model = buildmodel(name, pos, location, idx, PARA.parent, PARA.sbin);
+
+% showpositivetemplates(name, model, 'init');
+
+% Train pose model jointly with latent update, but fix part types.
+suffix = 'final1';
+filename = [name '_' suffix];
 try
-  load([cachedir cls]);
+  load([cachedir filename]);
 catch
-  model = buildmodel(name,model,def,idx,K,pa);
-  for p = 1:length(pa)
-		for n = 1:length(pos)
-			pos(n).mix(p) = idx{p}(n);
-		end
+  tic;
+  for n = 1:length(pos)
+    pos(n).mix = idx(n,:);
 	end
-  model = train(cls,model,pos,neg,0,1);
-  save([cachedir cls],'model');
+  model = train(filename, model, pos, neg, 0, 1);
+  traintime(2) = toc/60;
+  save([cachedir filename], 'model', 'traintime');
 end
 
-cls = [name '_final_' num2str(K')'];
-try
- load([cachedir cls]);
-catch
- if isfield(pos,'mix')
-   pos = rmfield(pos,'mix');
- end
- model = train(cls,model,pos,neg,0,1);
- save([cachedir cls],'model');
-end
+%   showpositivetemplates(name, model, suffix);
+
+% Finally train pose model jointly with latent update for all variables.
+% suffix = 'final';
+% filename = [name '_' suffix];
+% try
+%   load([cachedir filename]);
+% catch
+%   tic;
+%   if isfield(pos,'mix')
+%     pos = rmfield(pos,'mix');
+%   end
+%   model = train_spring(filename, model, pos, neg, 0, 1);
+%   traintime(4) = toc/60;
+%   save([cachedir filename], 'model', 'traintime');
+% end

@@ -6,7 +6,7 @@ function [boxes,model,ex] = detect(im, model, thresh, bbox, overlap, id, label)
 % The function returns a matrix with one row per detected object.  The
 % last column of each row gives the score of the detection.  The
 % column before last specifies the component used for the detection.
-% Each set of the first 4 columns specify the bounding box for a part
+% Each set of the first 5 columns specify the bounding box for a part
 %
 % If bbox is not empty, we pick best detection with significant overlap. 
 % If label is included, we write feature vectors to a global QP structure
@@ -44,7 +44,7 @@ end
 
 % Cache various statistics derived from model
 [components,filters,resp] = modelcomponents(model,pyra);
-boxes     = zeros(100000,length(components{1})*4+2);
+boxes     = zeros(100000,length(components{1})*5+2);
 cnt = 0;
 
 ex.blocks = [];
@@ -86,19 +86,26 @@ for rlevel = levels
       parts(k).level = level;
 	  
       if latent
-				for fi = 1:length(f)
-					if isfield(bbox,'m')
-						if fi ~= bbox.m(k)
-							parts(k).score(:,:,fi) = -INF;
-						end
-					else
-						ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox.xy(k,:),overlap);
+        if bbox.m(k) == 0
+          for fi = 1:length(f)
+            ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox.xy(k,:),overlap);
 						tmpscore = parts(k).score(:,:,fi);
 						tmpscore(~ovmask) = -INF;
 						parts(k).score(:,:,fi) = tmpscore;
-					end
-				end
-			end
+          end
+        else
+          for fi = 1:length(f)
+            if fi ~= bbox.m(k)
+              parts(k).score(:,:,fi) = -INF;
+            else
+              ovmask = testoverlap(parts(k).sizx(fi),parts(k).sizy(fi),pyra,rlevel,bbox.xy(k,:),overlap);
+              tmpscore = parts(k).score(:,:,fi);
+              tmpscore(~ovmask) = -INF;
+              parts(k).score(:,:,fi) = tmpscore;  
+            end
+          end
+        end
+      end
     end
     
     % Walk from leaves to root of tree, passing message to parent
@@ -125,9 +132,6 @@ for rlevel = levels
       x = X(i);
       y = Y(i);
       m = Im(y,x);
-      %[boxes(cnt).xy,boxes(cnt).m,boxes(cnt).v,ex] = backtrack(x,y,m,parts,pyra,ex,write);
-			%boxes(cnt).c = c;
-			%boxes(cnt).s = rscore(y,x);
       [box,ex] = backtrack(x,y,m,parts,pyra,ex,write);
 			boxes(cnt,:) = [box c rscore(y,x)];
       if write && ~latent
@@ -153,11 +157,9 @@ for rlevel = levels
   end
 end
 
-%boxes = boxes(1:cnt);
 boxes = boxes(1:cnt,:);
 
 if latent && ~isempty(boxes)
-  %boxes = boxes(end);
 	boxes = boxes(end,:);
   if write
     qp_write(ex);
@@ -182,33 +184,50 @@ for c = 1:length(model.components)
 		% store the scale of each part relative to the component root
 		par = p.parent;      
 		assert(par < k);
-		p.b = [model.bias(p.biasid).w];
-		p.b = reshape(p.b,[1 size(p.biasid)]);
-		p.biasI = [model.bias(p.biasid).i];
-		p.biasI = reshape(p.biasI,size(p.biasid));
-		
+% 		p.b = [model.bias(p.biasid).w];
+% 		p.b = reshape(p.b,[1 size(p.biasid)]);
+% 		p.biasI = [model.bias(p.biasid).i];
+% 		p.biasI = reshape(p.biasI,size(p.biasid));
+    INF = 1e10;
+    p.b = -INF * ones(size(p.biasid));
+    p.biasI = zeros(size(p.biasid));
+    for fp = 1:size(p.biasid,1)
+      for f = 1:size(p.biasid,2)
+        if p.biasid(fp,f) == 0, continue, end;
+        x = model.bias(p.biasid(fp,f));
+        p.b(fp,f) = x.w;
+        p.biasI(fp,f) = x.i;
+      end
+    end
+    p.b = reshape(p.b, [1 size(p.biasid)]);
+
+    p.sizx  = zeros(length(p.filterid),1);
+    p.sizy  = zeros(length(p.filterid),1);
 		for f = 1:length(p.filterid)
 			x = model.filters(p.filterid(f));
-			[p.sizy(f) p.sizx(f) foo] = size(x.w);
+			[p.sizy(f), p.sizx(f), ~] = size(x.w);
 			p.filterI(f) = x.i;
 		end
 		
-		for f = 1:length(p.defid)	  
-			x = model.defs(p.defid(f));
-			p.w(:,f)  = x.w';
-			p.defI(f) = x.i;
-			ax = x.anchor(1);
-			ay = x.anchor(2);    
-			ds = x.anchor(3);
-			p.scale = ds + components{c}(par).scale;
-			% amount of (virtual) padding to hallucinate
-			step = 2^ds;
-			virtpady = (step-1)*pyra.pady;
-			virtpadx = (step-1)*pyra.padx;
-			% starting points (simulates additional padding at finer scales)
-			p.starty(f) = ay-virtpady;
-			p.startx(f) = ax-virtpadx;      
-			p.step   = step;
+		for fp = 1:size(p.defid,1)
+      for f = 1:size(p.defid,2)
+        if p.defid(fp,f) == 0, continue, end;
+        x = model.defs(p.defid(fp,f));
+        p.w(:,fp,f)  = x.w';
+        p.defI(fp,f) = x.i;
+        ax = x.anchor(1);
+        ay = x.anchor(2);
+        ds = x.anchor(3);
+        p.scale = ds + components{c}(par).scale;
+        % amount of (virtual) padding to hallucinate
+        step = 2^ds;
+        virtpady = (step-1)*pyra.pady;
+        virtpadx = (step-1)*pyra.padx;
+        % starting points (simulates additional padding at finer scales)
+        p.starty(fp,f) = ay-virtpady;
+        p.startx(fp,f) = ax-virtpadx;      
+        p.step   = step;
+      end
 		end
 		components{c}(k) = p;
 	end
@@ -227,15 +246,24 @@ end
 % (3) Downsample if necessary
 function [score,Ix,Iy,Im] = passmsg(child,parent)
 
+INF = 1e10;
 K   = length(child.filterid);
+L   = length(parent.filterid);
 Ny  = size(parent.score,1);
 Nx  = size(parent.score,2);  
-Ix0 = zeros([Ny Nx K]);
-Iy0 = zeros([Ny Nx K]);
-[Ix0,Iy0,score0] = deal(zeros([Ny Nx K]));
+[Ix0,Iy0,score0] = deal(zeros([Ny Nx K L]));
 
-for k = 1:K
-	[score0(:,:,k),Ix0(:,:,k),Iy0(:,:,k)] = shiftdt(child.score(:,:,k), child.w(1,k), child.w(2,k), child.w(3,k), child.w(4,k),child.startx(k),child.starty(k),Nx,Ny,child.step);
+for l = 1:L
+  for k = 1:K
+    if child.defid(l,k) > 0
+      [score0(:,:,k,l),Ix0(:,:,k,l),Iy0(:,:,k,l)] = ...
+        shiftdt(child.score(:,:,k), child.w(1,l,k), child.w(2,l,k), child.w(3,l,k), child.w(4,l,k), child.startx(l,k),child.starty(l,k),Nx,Ny,child.step);
+    else
+      score0(:,:,k,l) = -INF * ones([Ny Nx]);
+      Ix0(:,:,k,l) = -INF * ones([Ny Nx]);
+      Iy0(:,:,k,l) = -INF * ones([Ny Nx]);
+    end
+  end
 end
 
 % At each parent location, for each parent mixture 1:L, compute best child mixture 1:K
@@ -245,10 +273,12 @@ i0 = reshape(1:N,Ny,Nx);
 [score,Ix,Iy,Im] = deal(zeros(Ny,Nx,L));
 for l = 1:L
 	b = child.b(1,l,:);
-	[score(:,:,l),I] = max(bsxfun(@plus,score0,b),[],3);
+	[score(:,:,l),I] = max(bsxfun(@plus,score0(:,:,:,l),b),[],3);
+  Ix_l = Ix0(:,:,:,l);
+  Iy_l = Iy0(:,:,:,l);
 	i = i0 + N*(I-1);
-	Ix(:,:,l)    = Ix0(i);
-	Iy(:,:,l)    = Iy0(i);
+	Ix(:,:,l)    = Ix_l(i);
+	Iy(:,:,l)    = Iy_l(i);
 	Im(:,:,l)    = I;
 end
 
@@ -258,7 +288,7 @@ function [box,ex] = backtrack(x,y,mix,parts,pyra,ex,write)
 
 numparts = length(parts);
 ptr = zeros(numparts,3);
-box = zeros(numparts,4);
+box = zeros(numparts,5);
 k   = 1;
 p   = parts(k);
 ptr(k,:) = [x y mix];
@@ -267,7 +297,7 @@ x1  = (x - 1 - pyra.padx)*scale+1;
 y1  = (y - 1 - pyra.pady)*scale+1;
 x2  = x1 + p.sizx(mix)*scale - 1;
 y2  = y1 + p.sizy(mix)*scale - 1;
-box(k,:) = [x1 y1 x2 y2];
+box(k,:) = [x1 y1 x2 y2 mix];
 
 if write
 	ex.id(3:5) = [p.level round(x+p.sizx(mix)/2) round(y+p.sizy(mix)/2)];
@@ -292,22 +322,22 @@ for k = 2:numparts
 	y1  = (ptr(k,2) - 1 - pyra.pady)*scale+1;
 	x2  = x1 + p.sizx(ptr(k,3))*scale - 1;
 	y2  = y1 + p.sizy(ptr(k,3))*scale - 1;
-	box(k,:) = [x1 y1 x2 y2];
+	box(k,:) = [x1 y1 x2 y2 ptr(k,3)];
 	
 	if write
 		ex.blocks(end+1).i = p.biasI(mix,ptr(k,3));
 		ex.blocks(end).x   = 1;
-		ex.blocks(end+1).i = p.defI(ptr(k,3));
-		ex.blocks(end).x   = defvector(x,y,ptr(k,1),ptr(k,2),ptr(k,3),p);
+		ex.blocks(end+1).i = p.defI(mix,ptr(k,3));
+		ex.blocks(end).x   = defvector(x,y,mix,ptr(k,1),ptr(k,2),ptr(k,3),p);
 		x   = ptr(k,1);
 		y   = ptr(k,2);
 		mix = ptr(k,3);
-		f   = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
+    f   = pyra.feat{p.level}(y:y+p.sizy(mix)-1,x:x+p.sizx(mix)-1,:);
 		ex.blocks(end+1).i = p.filterI(mix);
 		ex.blocks(end).x = f;
 	end
 end
-box = reshape(box',1,4*numparts);
+box = reshape(box',1,5*numparts);
 
 
 % Update QP with coordinate descent
@@ -327,10 +357,10 @@ model = vec2model(qp_w(),model);
 
 % Compute the deformation feature given parent locations, 
 % child locations, and the child part
-function res = defvector(px,py,x,y,mix,part)
+function res = defvector(px,py,pm,x,y,mix,part)
 
-probex = ( (px-1)*part.step + part.startx(mix) );
-probey = ( (py-1)*part.step + part.starty(mix) );
+probex = ( (px-1)*part.step + part.startx(pm,mix) );
+probey = ( (py-1)*part.step + part.starty(pm,mix) );
 dx = probex - x;
 dy = probey - y;
 res = -[dx^2 dx dy^2 dy]';
@@ -344,7 +374,7 @@ function ov = testoverlap(sizx,sizy,pyra,level,bbox,overlap)
 scale = pyra.scale(level);
 padx  = pyra.padx;
 pady  = pyra.pady;
-[dimy,dimx,foo] = size(pyra.feat{level});
+[dimy,dimx,~] = size(pyra.feat{level});
 
 bx1 = bbox(1);
 by1 = bbox(2);

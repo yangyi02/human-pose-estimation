@@ -29,13 +29,13 @@ if nargin < 9
   % maxsize*1e9/(4*model.len)  = # of examples we can store, encoded as 4-byte floats
   no_sv = (wpos+1) * length(pos);
   maxsize = 10 * no_sv * 4 * sparselen(model) / 1e9;
-  maxsize = min(max(maxsize,6),7.5);
+  maxsize = min(max(maxsize,4.5),5.5);
 end
 
-fprintf('Using %.1f GB\n',maxsize);
+fprintf('Training using %.1f GB\n',maxsize);
 
 if nargin < 10
-  overlap = 0.6;
+  overlap = 0.3;
 end
 
 % Vectorize the model
@@ -58,7 +58,7 @@ qp.i   = zeros(5,nmax,'int32');
 qp.b   = ones(nmax,1,'single');
 qp.d   = zeros(nmax,1,'double');
 qp.a   = zeros(nmax,1,'double');
-qp.sv  = logical(zeros(1,nmax));  
+qp.sv  = false(1,nmax);  
 qp.n   = 0;
 qp.lb = [];
 
@@ -172,6 +172,8 @@ for i = 1:numpos
 	bbox.xy = [pos(i).x1 pos(i).y1 pos(i).x2 pos(i).y2];
   if isfield(pos,'mix')
     bbox.m = pos(i).mix;
+  else
+    bbox.m = zeros(1,size(bbox.xy,1));
   end
 	area = (bbox.xy(:,3)-bbox.xy(:,1)+1).*(bbox.xy(:,4)-bbox.xy(:,2)+1);
 	if any(area < minsize)
@@ -208,7 +210,8 @@ for c = 1:length(model.components)
 	feat = zeros(model.len,1);
 	for p = model.components{c},
 		if ~isempty(p.biasid)
-			x = model.bias(p.biasid(1));
+      ind = find(p.biasid > 0, 1, 'first');
+			x = model.bias(p.biasid(ind));
 			i1 = x.i;
 			i2 = i1 + numel(x.w) - 1;
 			feat(i1:i2) = 1;
@@ -222,7 +225,8 @@ for c = 1:length(model.components)
 			numblocks = numblocks + 1;
 		end
 		if ~isempty(p.defid)
-			x  = model.defs(p.defid(1));
+      ind = find(p.defid > 0, 1, 'first');
+			x  = model.defs(p.defid(ind));
 			i1 = x.i;
 			i2 = i1 + numel(x.w) - 1;
 			feat(i1:i2) = 1;

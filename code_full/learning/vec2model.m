@@ -5,10 +5,11 @@ w = double(w);
 
 % Biases
 for i = 1:length(model.bias)
-    x = model.bias(i);
-    s = size(x.w);
-    j = x.i:x.i+prod(s)-1;
-    model.bias(i).w = reshape(w(j),s);
+  x = model.bias(i);
+  if x.i == 0, continue, end;
+  s = size(x.w);
+  j = x.i:x.i+prod(s)-1;
+  model.bias(i).w = reshape(w(j),s);
 end
 
 % Deformation parameters

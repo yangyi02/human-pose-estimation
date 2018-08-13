@@ -21,8 +21,9 @@ for n = 1:length(pos)
 end
 
 for n = 1:length(pos)
-  pos(n).x1 = pos(n).point(:,1) - boxsize(n)/2;
-  pos(n).y1 = pos(n).point(:,2) - boxsize(n)/2;
-  pos(n).x2 = pos(n).point(:,1) + boxsize(n)/2;
-  pos(n).y2 = pos(n).point(:,2) + boxsize(n)/2;
+  pos(n).scale = boxsize(n);
+  pos(n).x1 = round(pos(n).point(:,1) - pos(n).scale/2) + 1;
+  pos(n).y1 = round(pos(n).point(:,2) - pos(n).scale/2) + 1;
+  pos(n).x2 = round(pos(n).point(:,1) + pos(n).scale/2);
+  pos(n).y2 = round(pos(n).point(:,2) + pos(n).scale/2);
 end

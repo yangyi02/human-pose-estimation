@@ -1,5 +1,4 @@
-function jointmodel = buildmodel(name,model,def,idx,K,pa)
-% jointmodel = buildmodel(name,model,pa,def,idx,K)
+function jointmodel = buildmodel(name, pos, location, idx, parent, sbin)
 % This function merges together separate part models into a tree structure
 
 globals;
@@ -9,72 +8,80 @@ jointmodel.filters = struct('w',{},'i',{});
 jointmodel.defs    = struct('w',{},'i',{},'anchor',{});
 jointmodel.components{1} = struct('biasid',{},'filterid',{},'defid',{},'parent',{});
 
-jointmodel.pa = pa;
-jointmodel.maxsize  = model.maxsize;
-jointmodel.interval = model.interval;
-jointmodel.sbin = model.sbin;
+model0 = initmodel(pos,sbin);
+jointmodel.maxsize  = model0.maxsize;
+jointmodel.interval = model0.interval;
+jointmodel.sbin = model0.sbin;
 jointmodel.len = 0;
+jointmodel.parent = parent;
 
-% add children
-for i = 1:length(pa)
-  child = i;
-  parent = pa(child);
-  assert(parent < child);
-  
-  cls = [name '_part_' num2str(child) '_mix_' num2str(K(i))];
-  load([cachedir cls]);
+% add pren
+for p = 1:length(parent)
+  assert(parent(p) < p);
+  load([cachedir name '_part' num2str(p)]);
 
   % add bias
-  p.biasid = [];
-  if parent == 0
+  component.biasid = [];
+  if parent(p) == 0
     nb  = length(jointmodel.bias);
     b.w = 0;
     b.i = jointmodel.len + 1;
     jointmodel.bias(nb+1) = b;
     jointmodel.len = jointmodel.len + numel(b.w);
-    p.biasid = nb+1;
+    component.biasid = nb+1;
   else
-    for k = 1:max(idx{child})
-      for l = 1:max(idx{parent})
-        % if any(idx{child} == k & idx{parent} == l),
+    component.biasid = zeros(max(idx(:,parent(p))), max(idx(:,p)));
+    for l = 1:max(idx(:,parent(p)))
+      for k = 1:max(idx(:,p))
+        % Note parent and child's mixture pair must co-occur!!!
+        % Then the bias computed is meaningful.
+        ind = (idx(:,parent(p)) == l & idx(:,p) == k);
+        if sum(ind) == 0, continue, end;
         nb = length(jointmodel.bias);
         b.w = 0;
         b.i = jointmodel.len + 1;
         jointmodel.bias(nb+1) = b;
         jointmodel.len = jointmodel.len + numel(b.w);
-        p.biasid(l,k) = nb+1;
+        component.biasid(l,k) = nb+1;
       end
     end
   end
 
   % add filter
-  p.filterid = [];
-  for k = 1:max(idx{child})    
+  component.filterid = [];
+  for k = 1:max(idx(:,p))
     nf  = length(jointmodel.filters);
     f.w = model.filters(k).w;
     f.i = jointmodel.len + 1;
     jointmodel.filters(nf+1) = f;
     jointmodel.len = jointmodel.len + numel(f.w);
-    p.filterid = [p.filterid nf+1];
+    component.filterid = [component.filterid nf+1];
   end
 
   % add deformation parameter
-  p.defid = [];
-  if parent > 0
-    for k = 1:max(idx{child})
-      nd  = length(jointmodel.defs);
-      d.w = [0.01 0 0.01 0];
-      d.i = jointmodel.len + 1;
-      x = mean(def{child}(idx{child}==k,1) - def{parent}(idx{child}==k,1)); 
-      y = mean(def{child}(idx{child}==k,2) - def{parent}(idx{child}==k,2));
-      d.anchor = round([x+1 y+1 0]);
-      jointmodel.defs(nd+1) = d;
-      jointmodel.len = jointmodel.len + numel(d.w);	
-      p.defid = [p.defid nd+1];
+  component.defid = [];
+  if parent(p) > 0
+    component.defid = zeros(max(idx(:,parent(p))), max(idx(:,p)));
+    for l = 1:max(idx(:,parent(p)))
+      for k = 1:max(idx(:,p))
+        % Note parent and child's mixture pair must co-occur!!!
+        % Then the deformation computed is meaningful.
+        ind = (idx(:,parent(p)) == l & idx(:,p) == k);
+        if sum(ind) == 0, continue, end;
+        nd  = length(jointmodel.defs);
+        d.w = [0.01 0 0.01 0];
+        d.i = jointmodel.len + 1;
+        x = mean(location(ind,1,p) - location(ind,1,parent(p)));
+        y = mean(location(ind,2,p) - location(ind,2,parent(p)));
+        d.anchor = round([x+1 y+1 0]);
+        jointmodel.defs(nd+1) = d;
+        jointmodel.len = jointmodel.len + numel(d.w);	
+        component.defid(l,k) = nd+1;
+      end
     end
   end
 
-  p.parent = parent;
+  component.parent = parent(p);
   np = length(jointmodel.components{1});
-  jointmodel.components{1}(np+1) = p;
+  jointmodel.components{1}(np+1) = component;
 end

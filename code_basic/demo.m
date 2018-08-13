@@ -10,11 +10,7 @@ compile;
 % load and display model
 load('PARSE_model');
 visualizemodel(model);
-disp('model template visualization');
-disp('press any key to continue'); 
-pause;
-visualizeskeleton(model);
-disp('model tree visualization');
+disp('model visualization');
 disp('press any key to continue'); 
 pause;
 
@@ -29,8 +25,10 @@ for i = 1:length(imlist)
     boxes = detect_fast(im, model, min(model.thresh,-1));
     dettime = toc; % record cpu time
     boxes = nms(boxes, .1); % nonmaximal suppression
+    det.obj = box2obj(boxes);
+    
     colorset = {'g','g','y','m','m','m','m','y','y','y','r','r','r','r','y','c','c','c','c','y','y','y','b','b','b','b'};
-    showboxes(im, boxes(1,:),colorset); % show the best detection
+    showboxes(im, det.obj(1),colorset); % show the best detection
     %showboxes(im, boxes,colorset);  % show all detections
     fprintf('detection took %.1f seconds\n',dettime);
     disp('press any key to continue');

@@ -22,5 +22,3 @@ end
 if ~exist([cachedir 'imflip/'],'dir')
   mkdir([cachedir 'imflip/']);
 end
-
-addpath data/BUFFY;

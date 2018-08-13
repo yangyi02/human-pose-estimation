@@ -3,3 +3,4 @@
 *.m~
 code_full/cache
 code_full/data
+.DS_Store
