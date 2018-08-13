@@ -52,10 +52,10 @@ pose-release-v1.4
 5. New data structure for human detection and pose estimation.
 6. Clustering features for every part depend on its parent and children.
 
-|      | Head | Shou | Elbo | Wris | Hip  | Knee | Ankl | Avg  |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| APK  | 88.3 | 83.9 | 54.3 | 34.9 | 76.2 | 65.5 | 57.5 | 65.8 |
-| PCK  | 92.0 | 87.8 | 65.6 | 50.0 | 81.2 | 74.9 | 69.3 | 74.4 | 
+| PARSE | Head | Shou | Elbo | Wris | Hip  | Knee | Ankl | Avg  |
+| ----  | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| APK   | 88.3 | 83.9 | 54.3 | 34.9 | 76.2 | 65.5 | 57.5 | 65.8 |
+| PCK   | 92.0 | 87.8 | 65.6 | 50.0 | 81.2 | 74.9 | 69.3 | 74.4 | 
 
 pose-release-v1.3
 1. New convolution and other necessary files for windows machine to run the code.
@@ -66,10 +66,10 @@ pose-release-v1.3
 6. New training code.
 7. New non-maximum suppression after detection.
 
-|      | Head | Shou | Elbo | Wris | Hip  | Knee | Ankl | Avg  |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| APK  | 86.9 | 83.9 | 57.2 | 30.6 | 73.9 | 62.6 | 56.4 | 64.5 |
-| PCK  | 89.5 | 86.8 | 67.6 | 48.0 | 80.2 | 74.6 | 69.5 | 73.8 | 
+| PARSE | Head | Shou | Elbo | Wris | Hip  | Knee | Ankl | Avg  |
+| ----  | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| APK   | 86.9 | 83.9 | 57.2 | 30.6 | 73.9 | 62.6 | 56.4 | 64.5 |
+| PCK   | 89.5 | 86.8 | 67.6 | 48.0 | 80.2 | 74.6 | 69.5 | 73.8 | 
 
 pose-release-v1.2
 First time release
